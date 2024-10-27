@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fermat's Spiral with Prime Numbers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let currentNumber = 1;
+        let maxNumber = 3000;
+        let spacing = 5;
+        let isGenerating = true;
+        let disappearingNumber;
+        let cycleComplete = false;
+
+        function setup() {
+            let canvas = createCanvas(800, 800);
+            canvas.parent(document.body);
+            background(0);
+            frameRate(30);
+        }
+
+        function draw() {
+            background(0);
+            translate(width / 2, height / 2);
+            
+            if (isGenerating) {
+                generatePoints();
+                if (currentNumber > maxNumber) {
+                    isGenerating = false;
+                    disappearingNumber = currentNumber - 1;
+                }
+            } else {
+                removePoints();
+                if (currentNumber <= 1) {
+                    isGenerating = true;
+                    currentNumber = 1;
+                    cycleComplete = true;
+                }
+            }
+            
+            drawSpiral();
+            
+            if (cycleComplete) {
+                maxNumber = int(random(1000, 5000));  // Randomize max number for next cycle
+                cycleComplete = false;
+            }
+        }
+
+        function generatePoints() {
+            for (let i = 0; i < 5; i++) {
+                if (currentNumber <= maxNumber) {
+                    let r = spacing * sqrt(currentNumber);
+                    let theta = currentNumber;
+                    let x = r * cos(theta);
+                    let y = r * sin(theta);
+
+                    if (isPrime(currentNumber)) {
+                        fill(255, 20, 147); // Neon pink color for prime numbers
+                        ellipse(x, y, 8, 8);
+                    } else {
+                        fill(173, 216, 230, 150); // Pastel blue with transparency for non-prime numbers
+                        ellipse(x, y, 4, 4);
+                    }
+
+                    currentNumber++;
+                } else {
+                    isGenerating = false;
+                    break;
+                }
+            }
+        }
+
+        function drawSpiral() {
+            for (let i = 1; i <= currentNumber - 1; i++) {
+                let r = spacing * sqrt(i);
+                let theta = i;
+                let x = r * cos(theta);
+                let y = r * sin(theta);
+
+                if (isPrime(i)) {
+                    fill(255, 20, 147);
+                    ellipse(x, y, 8, 8);
+                } else {
+                    fill(173, 216, 230, 150);
+                    ellipse(x, y, 4, 4);
+                }
+            }
+        }
+
+        function removePoints() {
+            for (let i = 0; i < 50; i++) {
+                if (disappearingNumber > 0) {
+                    disappearingNumber--;
+                } else {
+                    break;
+                }
+            }
+            
+            currentNumber = disappearingNumber + 1;
+        }
+
+        function isPrime(num) {
+            if (num <= 1) return false;
+            for (let i = 2; i <= sqrt(num); i++) {
+                if (num % i === 0) return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
