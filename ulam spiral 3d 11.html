@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Ulam Spiral (up to 300) with High Contrast Colors</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let primes = [];
+        let twinPrimes = [];
+        let maxNum = 600;
+        let spacing;
+        let angle = 0;
+        let autoRotate = true;
+        let rotX = 0;
+        let rotY = 0;
+        let showNonPrimes = true;  // Add this line near the top with other let declarations
+        let convexConcaveSpeed = 0.007;  // Increased from 0.005
+        let convexConcaveAmplitude = 30;  // Increased from 20
+        let zoomLevel = 1;
+        let targetZoomLevel = 1;
+        let zoomSpeed = 0.1;  // Adjust this value to change how quickly the zoom reaches its target
+
+        function setup() {
+            // Create a canvas that fits the window
+            createCanvas(windowWidth, windowHeight, WEBGL);
+            generatePrimes(maxNum);
+            generateTwinPrimes();
+            textAlign(CENTER, CENTER);
+            
+            // Calculate spacing based on the smaller dimension of the window
+            spacing = min(width, height) / (Math.sqrt(maxNum) * 1.5);  // Increased spacing
+            
+            // Initialize rotation angles
+            rotX = 0;
+            rotY = 0;
+        }
+
+        function draw() {
+            background(59, 47, 83);  // Dark pastel purple background
+            ambientLight(30);  // Reduced ambient light for more contrast
+            pointLight(255, 255, 255, 0, 0, 500);  // Stronger point light
+            pointLight(255, 255, 255, 500, 0, 0);  // Additional light source
+
+            // Apply rotations
+            if (autoRotate) {
+                rotY += 0.01;
+                rotX += 0.005;
+            }
+            rotateY(rotY);
+            rotateX(rotX * 0.5);  // Added rotation on X-axis for more dynamic view
+            
+            // Smoothly interpolate towards the target zoom level
+            zoomLevel = lerp(zoomLevel, targetZoomLevel, zoomSpeed);
+
+            // Apply zoom
+            scale(zoomLevel);
+
+            let x = 0;
+            let y = 0;
+            let z = 0;
+            let step = 1;
+            let stepSize = 1;
+            let direction = 0;
+
+            let convexConcaveFactor = sin(frameCount * convexConcaveSpeed) * convexConcaveAmplitude;
+
+            for (let i = 1; i <= maxNum; i++) {
+                push();
+                let zOffset = z + convexConcaveFactor * sin(sqrt(x*x + y*y) * 0.07);  // Increased from 0.05
+                translate(x * spacing, y * spacing, zOffset * spacing);
+                if (twinPrimes.includes(i)) {
+                    fill(139, 0, 0);  // Dark red for twin primes
+                    emissiveMaterial(139, 0, 0);  // Emissive material for glow effect
+                    box(spacing * 0.8);
+                } else if (primes.includes(i)) {
+                    fill(255, 102, 102);  // Pastel red for primes
+                    emissiveMaterial(255, 102, 102);  // Emissive material for glow effect
+                    box(spacing * 0.8);
+                } else if (showNonPrimes) {
+                    fill(173, 216, 230);  // Pastel greyish light blue for non-primes
+                    emissiveMaterial(173, 216, 230);
+                    box(spacing * 0.8);
+                }
+                pop();
+
+                // Move to the next position
+                switch (direction) {
+                    case 0: x++; break; // Right
+                    case 1: y--; break; // Up
+                    case 2: x--; break; // Left
+                    case 3: y++; break; // Down
+                }
+                z += 0.02; // Reduced z increment for a tighter spiral
+
+                // Change direction and increase step size
+                step++;
+                if (step > stepSize) {
+                    direction = (direction + 1) % 4;
+                    step = 1;
+                    if (direction % 2 == 0) {
+                        stepSize++;
+                    }
+                }
+            }
+        }
+
+        function mouseDragged() {
+            autoRotate = false;
+            rotY += (mouseX - pmouseX) * 0.01;
+            rotX += (mouseY - pmouseY) * 0.01;
+        }
+
+        function mouseReleased() {
+            autoRotate = true;
+        }
+
+        function windowResized() {
+            // Resize canvas when the window is resized
+            resizeCanvas(windowWidth, windowHeight);
+            spacing = min(width, height) / (Math.sqrt(maxNum) * 1.5);  // Increased spacing
+        }
+
+        function generatePrimes(max) {
+            let sieve = new Array(max + 1).fill(true);
+            sieve[0] = sieve[1] = false;
+
+            for (let i = 2; i <= Math.sqrt(max); i++) {
+                if (sieve[i]) {
+                    for (let j = i * i; j <= max; j += i) {
+                        sieve[j] = false;
+                    }
+                }
+            }
+
+            for (let i = 2; i <= max; i++) {
+                if (sieve[i]) primes.push(i);
+            }
+        }
+
+        function generateTwinPrimes() {
+            for (let i = 0; i < primes.length - 1; i++) {
+                if (primes[i + 1] - primes[i] === 2) {
+                    twinPrimes.push(primes[i], primes[i + 1]);
+                }
+            }
+        }
+
+        function doubleClicked() {
+            showNonPrimes = !showNonPrimes;
+            return false;  // Prevents default behavior
+        }
+
+        function mouseWheel(event) {
+            // Adjust target zoom level based on mouse wheel movement
+            targetZoomLevel += event.delta * -0.0005;  // Reduced from -0.001 for finer control
+            
+            // Limit target zoom level to prevent it from going too small or too large
+            targetZoomLevel = constrain(targetZoomLevel, 0.1, 5);
+            
+            // Prevent default scrolling behavior
+            return false;
+        }
+    </script>
+</body>
+</html>
