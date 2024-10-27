@@ -44,12 +44,12 @@
         }
 
         function drawSierpinski(x, y, size, n) {
-            // Softer pastel color palette
-            let pastelHues = [30, 60, 180, 210, 270, 330]; // Pastel orange, yellow, cyan, blue, purple, pink
+            // Pastel purple and pink palette
+            let pastelHues = [270, 280, 290, 300, 310, 320]; // Various shades of purple to pink
             let hueIndex = (n + Math.floor(time)) % pastelHues.length;
             let hue = pastelHues[hueIndex];
             
-            stroke(hue, 50, 95, 1); // Lower saturation, higher brightness for more pastel effect
+            stroke(hue, 40, 98, 1); // Even lower saturation and higher brightness for softer pastels
             
             if (n === 0) {
                 triangle(x, y, x - size / 2, y - size * sqrt(3) / 2, x + size / 2, y - size * sqrt(3) / 2);
