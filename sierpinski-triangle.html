@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierpinski Triangle Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let depth = 0;
+        let maxDepth = 8;
+        let triangleSize;
+        let time = 0;
+
+        function setup() {
+            createCanvas(800, 800);
+            triangleSize = min(width, height) * 0.8;
+            frameRate(1);  // Change frame every second
+            colorMode(HSB, 360, 100, 100, 1);
+        }
+
+        function draw() {
+            background(0);
+            noFill();
+            strokeWeight(2);  // Increase stroke weight for better visibility
+
+            translate(width / 2, height * 0.9);
+            drawSierpinski(0, 0, triangleSize, depth);
+
+            depth = (depth + 1) % (maxDepth + 1);
+            time += 0.1;
+        }
+
+        function drawSierpinski(x, y, size, n) {
+            let hue = (sin(time + n * 0.5) * 60 + 180) % 360;
+            stroke(hue, 100, 100, 1);  // Increase saturation and brightness, remove transparency
+            
+            if (n === 0) {
+                triangle(x, y, x - size / 2, y - size * sqrt(3) / 2, x + size / 2, y - size * sqrt(3) / 2);
+            } else {
+                let newSize = size / 2;
+                drawSierpinski(x, y, newSize, n - 1);
+                drawSierpinski(x - newSize / 2, y - newSize * sqrt(3) / 2, newSize, n - 1);
+                drawSierpinski(x + newSize / 2, y - newSize * sqrt(3) / 2, newSize, n - 1);
+            }
+        }
+    </script>
+</body>
+</html>
